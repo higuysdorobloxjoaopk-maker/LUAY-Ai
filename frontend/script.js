@@ -1,33 +1,40 @@
-const messages = document.getElementById("messages");
-const input = document.getElementById("input");
+const input = document.getElementById("userInput");
+const sendBtn = document.getElementById("sendBtn");
+const chat = document.querySelector(".chat-container");
 
-function addMessage(text, cls) {
-  const div = document.createElement("div");
-  div.className = "msg " + cls;
-  div.textContent = text;
-  messages.appendChild(div);
-  messages.scrollTop = messages.scrollHeight;
+function addMessage(text, sender = "user") {
+  const msg = document.createElement("div");
+  msg.className = `message ${sender}`;
+
+  const avatar = document.createElement("div");
+  avatar.className = "avatar";
+  avatar.textContent = sender === "user" ? "🧑" : "🤖";
+
+  const bubble = document.createElement("div");
+  bubble.className = "bubble";
+  bubble.innerHTML = `<p>${text}</p>`;
+
+  msg.appendChild(avatar);
+  msg.appendChild(bubble);
+  chat.appendChild(msg);
+
+  chat.scrollTop = chat.scrollHeight;
 }
 
-async function send() {
+function fakeBotReply(userText) {
+  setTimeout(() => {
+    addMessage("Entendi! Em breve vou processar isso 🤖✨", "bot");
+  }, 600);
+}
+
+sendBtn.addEventListener("click", () => {
   const text = input.value.trim();
   if (!text) return;
-
-  addMessage("Você: " + text, "user");
+  addMessage(text, "user");
   input.value = "";
+  fakeBotReply(text);
+});
 
-  addMessage("🤖 Pensando...", "bot");
-
-  const res = await fetch("http://localhost:8000/ask", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({question: text})
-  });
-
-  const data = await res.json();
-  messages.lastChild.textContent = "🤖 " + data.answer;
-}
-
-input.addEventListener("keydown", e => {
-  if (e.key === "Enter") send();
+input.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") sendBtn.click();
 });
